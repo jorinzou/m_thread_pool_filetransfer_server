@@ -303,18 +303,20 @@ void ReceiveParse(int ClinetFd)
     DEBUG_INFO("ClinetFd=%d",ClinetFd);
     unsigned char DataType = 0;
     int ret = recvfrom(ClinetFd,&DataType,sizeof(DataType),MSG_DONTWAIT/*非阻塞*/,NULL,0);
-    if (ret < 0){
+    if (ret <= 0){
         perror("recvfrom");
         DEBUG_INFO("ret=%d",ret);
+        DeleteSocketRecord(SocketRecord->SocketFd);
         return;
     }
 
     if(DataType == 0xfe){//文件头
         struct FileHead FileHeadInfo;
         ret = recvfrom(ClinetFd,&FileHeadInfo,sizeof(FileHeadInfo),MSG_DONTWAIT/*非阻塞*/,NULL,0);  
-        if (ret < 0){
+        if (ret <= 0){
             perror("recvfrom");
             DEBUG_INFO("ret=%d",ret);
+            DeleteSocketRecord(SocketRecord->SocketFd);
             return;
         }
         sprintf(SocketRecord->FileDir,"%s/%s/%s",FileDataBaseDir,inet_ntoa(SocketRecord->ClientAddr.sin_addr),FileHeadInfo.FileName);
